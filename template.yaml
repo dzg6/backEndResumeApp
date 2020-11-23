@@ -1,0 +1,321 @@
+Resources:
+  WidgetsWidgetStore0ED7FDB7:
+    Type: AWS::S3::Bucket
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/WidgetStore/Resource
+  WidgetsWidgetHandlerServiceRole8C2B589C:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/WidgetHandler/ServiceRole/Resource
+  WidgetsWidgetHandlerServiceRoleDefaultPolicyA8E097C8:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetObject*
+              - s3:GetBucket*
+              - s3:List*
+              - s3:DeleteObject*
+              - s3:PutObject*
+              - s3:Abort*
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - WidgetsWidgetStore0ED7FDB7
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - WidgetsWidgetStore0ED7FDB7
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+      PolicyName: WidgetsWidgetHandlerServiceRoleDefaultPolicyA8E097C8
+      Roles:
+        - Ref: WidgetsWidgetHandlerServiceRole8C2B589C
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/WidgetHandler/ServiceRole/DefaultPolicy/Resource
+  WidgetsWidgetHandler1BC9DB34:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Ref: AssetParameters1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02S3Bucket36128464
+        S3Key:
+          Fn::Join:
+            - ""
+            - - Fn::Select:
+                  - 0
+                  - Fn::Split:
+                      - "||"
+                      - Ref: AssetParameters1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02S3VersionKey1A3D5DCA
+              - Fn::Select:
+                  - 1
+                  - Fn::Split:
+                      - "||"
+                      - Ref: AssetParameters1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02S3VersionKey1A3D5DCA
+      Handler: widgets.main
+      Role:
+        Fn::GetAtt:
+          - WidgetsWidgetHandlerServiceRole8C2B589C
+          - Arn
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          BUCKET:
+            Ref: WidgetsWidgetStore0ED7FDB7
+    DependsOn:
+      - WidgetsWidgetHandlerServiceRoleDefaultPolicyA8E097C8
+      - WidgetsWidgetHandlerServiceRole8C2B589C
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/WidgetHandler/Resource
+      aws:asset:path: C:\Users\Mark\Desktop\emsi-project\backEndResumeApp\resources
+      aws:asset:property: Code
+  Widgetswidgetsapi72353315:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: This service serves widgets.
+      Name: Widget Service
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/Resource
+  WidgetswidgetsapiCloudWatchRole8C2A5801:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/CloudWatchRole/Resource
+  WidgetswidgetsapiAccountDA847A77:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn:
+        Fn::GetAtt:
+          - WidgetswidgetsapiCloudWatchRole8C2A5801
+          - Arn
+    DependsOn:
+      - Widgetswidgetsapi72353315
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/Account
+  WidgetswidgetsapiDeployment406A9BD65abdc7f3704632e1b2570c32b5c34770:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId:
+        Ref: Widgetswidgetsapi72353315
+      Description: Automatically created by the RestApi construct
+    DependsOn:
+      - WidgetswidgetsapiGET2086C825
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/Deployment/Resource
+  WidgetswidgetsapiDeploymentStageprod0D8CD1B7:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId:
+        Ref: Widgetswidgetsapi72353315
+      DeploymentId:
+        Ref: WidgetswidgetsapiDeployment406A9BD65abdc7f3704632e1b2570c32b5c34770
+      StageName: prod
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/DeploymentStage.prod/Resource
+  WidgetswidgetsapiGETApiPermissionBackEndResumeAppStackWidgetswidgetsapi081EDA75GET05F8BE38:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - WidgetsWidgetHandler1BC9DB34
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:"
+            - Ref: AWS::Partition
+            - ":execute-api:"
+            - Ref: AWS::Region
+            - ":"
+            - Ref: AWS::AccountId
+            - ":"
+            - Ref: Widgetswidgetsapi72353315
+            - /
+            - Ref: WidgetswidgetsapiDeploymentStageprod0D8CD1B7
+            - /GET/
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/Default/GET/ApiPermission.BackEndResumeAppStackWidgetswidgetsapi081EDA75.GET..
+  WidgetswidgetsapiGETApiPermissionTestBackEndResumeAppStackWidgetswidgetsapi081EDA75GETA1440D48:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - WidgetsWidgetHandler1BC9DB34
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:"
+            - Ref: AWS::Partition
+            - ":execute-api:"
+            - Ref: AWS::Region
+            - ":"
+            - Ref: AWS::AccountId
+            - ":"
+            - Ref: Widgetswidgetsapi72353315
+            - /test-invoke-stage/GET/
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/Default/GET/ApiPermission.Test.BackEndResumeAppStackWidgetswidgetsapi081EDA75.GET..
+  WidgetswidgetsapiGET2086C825:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId:
+        Fn::GetAtt:
+          - Widgetswidgetsapi72353315
+          - RootResourceId
+      RestApiId:
+        Ref: Widgetswidgetsapi72353315
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        RequestTemplates:
+          application/json: '{ "statusCode": "200" }'
+        Type: AWS_PROXY
+        Uri:
+          Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - ":apigateway:"
+              - Ref: AWS::Region
+              - :lambda:path/2015-03-31/functions/
+              - Fn::GetAtt:
+                  - WidgetsWidgetHandler1BC9DB34
+                  - Arn
+              - /invocations
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/Widgets/widgets-api/Default/GET/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Modules: aws-cdk=1.67.0,@aws-cdk/assets=1.67.0,@aws-cdk/aws-apigateway=1.67.0,@aws-cdk/aws-applicationautoscaling=1.67.0,@aws-cdk/aws-autoscaling-common=1.67.0,@aws-cdk/aws-cloudwatch=1.67.0,@aws-cdk/aws-codeguruprofiler=1.67.0,@aws-cdk/aws-ec2=1.67.0,@aws-cdk/aws-events=1.67.0,@aws-cdk/aws-iam=1.67.0,@aws-cdk/aws-kms=1.67.0,@aws-cdk/aws-lambda=1.67.0,@aws-cdk/aws-logs=1.67.0,@aws-cdk/aws-s3=1.67.0,@aws-cdk/aws-s3-assets=1.67.0,@aws-cdk/aws-sqs=1.67.0,@aws-cdk/aws-ssm=1.67.0,@aws-cdk/cloud-assembly-schema=1.67.0,@aws-cdk/core=1.67.0,@aws-cdk/cx-api=1.67.0,@aws-cdk/region-info=1.67.0,jsii-runtime=node.js/v12.18.3
+    Metadata:
+      aws:cdk:path: BackEndResumeAppStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Outputs:
+  WidgetswidgetsapiEndpoint5B785C68:
+    Value:
+      Fn::Join:
+        - ""
+        - - https://
+          - Ref: Widgetswidgetsapi72353315
+          - .execute-api.
+          - Ref: AWS::Region
+          - "."
+          - Ref: AWS::URLSuffix
+          - /
+          - Ref: WidgetswidgetsapiDeploymentStageprod0D8CD1B7
+          - /
+Parameters:
+  AssetParameters1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02S3Bucket36128464:
+    Type: String
+    Description: S3 bucket for asset "1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02"
+  AssetParameters1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02S3VersionKey1A3D5DCA:
+    Type: String
+    Description: S3 key for asset version "1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02"
+  AssetParameters1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02ArtifactHash4423790C:
+    Type: String
+    Description: Artifact hash for asset "1b8ccdb3b013d5ee54ee6f7a9d356624e72778c572396ca1bdd2f2b62acc3a02"
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+
