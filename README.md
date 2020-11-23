@@ -2,7 +2,7 @@
 AWS CDK code is infastructure back-end serverless lambda functions for [frontEndResume](https://github.com/dzg6/frontEndResumeApp) 
 
 ## Project Mission
-This project is made to display my ability to program back-end web applications using AWS's Lambda, S3, and API Gateway. Please check out the 
+This project is made to display my ability to program back-end web applications using AWS's Lambda, S3, and API Gateway.
 
 ## Project Description
 The core of what I wrote is in /resources/ and /lib/
