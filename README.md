@@ -1,19 +1,25 @@
-<<<<<<< HEAD
 # backEndResumeApp
-Using AWS's CDK to create a backend
-=======
-# Welcome to your CDK TypeScript project!
+AWS CDK code is infastructure back-end serverless lambda functions for [frontEndResume](https://github.com/dzg6/frontEndResumeApp) 
 
-This is a blank project for TypeScript development with CDK.
+## Project Mission
+This project is made to display my ability to program back-end web applications using AWS's Lambda, S3, and API Gateway. Please check out the 
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Project Description
+The core of what I wrote is in /resources/ and /lib/
+Containters
 
-## Useful commands
+* [/lib/user_service](https://github.com/dzg6/backEndResumeApp/blob/main/lib/user_service.ts)
+* [/resources/createUser](https://github.com/dzg6/backEndResumeApp/blob/main/resources/createUser/createUser.js)
+* [/resources/loginUser](https://github.com/dzg6/backEndResumeApp/blob/main/resources/loginUser/loginUser.js)
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
->>>>>>> master
+### AWS tech being used
+
+* AWS CDK
+* AWS CLI
+* Lambda
+* API Gateway
+* S3 
+* KMS Encryption
+* IAM Policies
+
+

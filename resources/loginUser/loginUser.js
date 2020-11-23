@@ -1,3 +1,9 @@
+/**
+ *
+ * Login User Lambda Handler Function
+ *
+ */
+
 const AWS = require('aws-sdk');
 const { error } = require('console');
 const S3 = new AWS.S3();
@@ -8,7 +14,7 @@ const masterKey =  process.env.KMSKEY;
 exports.main = async function(event, context) {
   try {
 
-    
+    //parsing event body from client app
     var method = event.httpMethod;
     var eventBody = JSON.parse(event.body);
 
@@ -18,8 +24,10 @@ exports.main = async function(event, context) {
     var username = eventBody.username;
     username = username.toLowerCase();
 
+
     if (method === "POST") {
 
+      // POST /{id} / login
       // Return error if we do not have a name
       if (!username) {
         return {
@@ -29,12 +37,10 @@ exports.main = async function(event, context) {
         };
       }
 
-
+      //Return if Username does not exisit in Database
       const getUser = await S3.listObjectsV2({ Bucket: bucketName, Prefix: username}).promise();
 
-      //Return if Username does not exisit in Database
-       if(getUser.Contents && getUser.Contents.length <= 0){
-
+      if(getUser.Contents && getUser.Contents.length <= 0){
         const response = {
           status:{
             code: 200,
@@ -46,40 +52,43 @@ exports.main = async function(event, context) {
           headers: {},
           body: JSON.stringify(response)
         }
-
        }
 
 
+      //Get User from Database
       const data = await S3.getObject({ Bucket: bucketName, Key: username}).promise().then();
       const bufferedData = Buffer.from(data.Body).toString();
       const userData = JSON.parse(bufferedData);
-
-      const paramsDecrypt2 = {
+ 
+      // Decrypt Password
+      const decryptParams = {
         CiphertextBlob: Buffer.from(userData.password, 'base64')
       };
-        
-      const decrypt2Result = await kms.decrypt(paramsDecrypt2).promise();
-      const cleanedPassword = Buffer.from(decrypt2Result.Plaintext).toString();
+      const decryptResult = await kms.decrypt(decryptParams).promise();
+      const cleanedPassword = Buffer.from(decryptResult.Plaintext).toString();
 
-    const response = {
-      status:{
-        code: 200,
-        msg: "successful login of " + username,
-      },
-      username: userData.username.toLowerCase(),
-      email: userData.email,
-      isAuthenicated: true,
-    };
 
+      // Checks if passwords Match
       if(cleanedPassword == eventBody.password){
 
+      // Passwords matched and return logged in user
+        const response = {
+          status:{
+            code: 200,
+            msg: "successful login of " + username,
+          },
+          username: userData.username.toLowerCase(),
+          email: userData.email,
+          isAuthenicated: true,
+        };
         return{
           statusCode: 200,
           headers: {},
           body: JSON.stringify(response)
         }
+
       }else{
-        
+        // Passwords did not match, return error
         return{
           statusCode: 200,
           headers: {},

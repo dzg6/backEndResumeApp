@@ -1,12 +1,13 @@
+/**
+ *
+ * Authroizer Lambda Function
+ * Used by API Gateway
+ * THIS IS A WIP
+ */
+
+
 exports.main = function(event, context, callback) {        
     console.log('Received event:', JSON.stringify(event, null, 2));
-
-    // A simple request-based authorizer example to demonstrate how to use request 
-    // parameters to allow or deny a request. In this example, a request is  
-    // authorized if the client-supplied HeaderAuth1 header, QueryString1 
-    // query parameter, and stage variable of StageVar1 all match
-    // specified values of 'headerValue1', 'queryValue1', and 'stageValue1',
-    // respectively.
 
     // Retrieve request parameters from the Lambda function input:
     var headers = event.headers;
