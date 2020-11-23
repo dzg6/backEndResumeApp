@@ -12,9 +12,9 @@ exports.main = async function(event, context) {
   try {
     var method = event.httpMethod;
     var eventBody = JSON.parse(event.body);
+
     var username = event.path.startsWith('/') ? event.path.substring(1) : event.path;
     username = username.toLowerCase();
-    var userPath = event.pathParameters.id.toLowerCase();
     var password = eventBody.password;
     var email = eventBody.email.toLowerCase();
 

@@ -7,22 +7,19 @@ const masterKey =  process.env.KMSKEY;
 
 exports.main = async function(event, context) {
   try {
+
+    
     var method = event.httpMethod;
     var eventBody = JSON.parse(event.body);
-    var path = event.path.startsWith('/') ? event.path.substring(1) : event.path;
+
     var userPath = event.pathParameters.id.toLowerCase();
     userPath = userPath.toLowerCase();
+
     var username = eventBody.username;
     username = username.toLowerCase();
 
-    // return {
-    //   statusCode: 200,
-    //   headers: {},
-    //   body: JSON.stringify(userPath)
-    // };
-
     if (method === "POST") {
-      // POST /name
+
       // Return error if we do not have a name
       if (!username) {
         return {
@@ -33,25 +30,27 @@ exports.main = async function(event, context) {
       }
 
 
-      const checkUser = await S3.listObjectsV2({ Bucket: bucketName, Prefix: userPath}).promise();
-       if(checkUser.Contents && checkUser.Contents.length <= 0){
+      const getUser = await S3.listObjectsV2({ Bucket: bucketName, Prefix: username}).promise();
+
+      //Return if Username does not exisit in Database
+       if(getUser.Contents && getUser.Contents.length <= 0){
 
         const response = {
           status:{
             code: 200,
-            msg: "No Username matches " + userPath,
+            msg: "No Username matches " + username,
           }
         };
-      // if(checkUser.Contents[0].Key === username){
         return{
           statusCode: 200,
           headers: {},
           body: JSON.stringify(response)
         }
+
        }
 
 
-      const data = await S3.getObject({ Bucket: bucketName, Key: userPath}).promise().then();
+      const data = await S3.getObject({ Bucket: bucketName, Key: username}).promise().then();
       const bufferedData = Buffer.from(data.Body).toString();
       const userData = JSON.parse(bufferedData);
 
@@ -65,9 +64,10 @@ exports.main = async function(event, context) {
     const response = {
       status:{
         code: 200,
-        msg: "successful login of " + userPath,
+        msg: "successful login of " + username,
       },
       username: userData.username.toLowerCase(),
+      email: userData.email,
       isAuthenicated: true,
     };
 
@@ -87,48 +87,8 @@ exports.main = async function(event, context) {
         }
       }
 
-    };//POST
-      // if(checkUser.Contents && checkUser.Contents.length > 0){
+    };
 
-      // }
-
-
-    //   const params = {
-    //     KeyId: masterKey,
-    //     Plaintext: eventBody.password
-    //   };
-    //   const encryptPassword = await kms.encrypt(params).promise();
-    //   const cleanPassword = Buffer.from(encryptPassword.CiphertextBlob).toString('base64')
-    //   const now = new Date();
-    //   const outputUser = {
-    //     username: username,
-    //     password: cleanPassword,
-    //     dateCreated: now,
-    //   };
-
-    //   await S3.putObject({
-    //     Bucket: bucketName,
-    //     Key: username,
-    //     Body: JSON.stringify(outputUser),
-    //     ContentType: 'application/json'
-    //   }).promise();
-
-    //   var acceptedMSG = username + " has been created!" 
-
-    //   return {
-    //     statusCode: 200,
-    //     headers: {},
-    //     body: acceptedMSG
-    //   };
-    // }
-
-
-    // // We got something besides GET, 
-    // return {
-    //   statusCode: 400,
-    //   headers: {},
-    //   body: "We only accept GET not" + method
-    // };
   } catch(error) {
     var body = error.stack || JSON.stringify(error, null, 2);
     return {
